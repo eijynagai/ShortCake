@@ -23,6 +23,7 @@ RUN set -x && \
     libunwind-dev \
     libxt-dev \
     pandoc \
+    bedtools \
     && apt-get clean \
     && rm -rf /var/lib/apt/lists/*
 
