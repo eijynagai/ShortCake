@@ -22,8 +22,8 @@ RUN set -x && \
     libssl-dev \
     libunwind-dev \
     libxt-dev \
-    pandoc \
     bedtools \
+    pandoc \
     && apt-get clean \
     && rm -rf /var/lib/apt/lists/*
 
