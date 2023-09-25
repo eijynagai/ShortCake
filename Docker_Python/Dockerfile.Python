@@ -112,6 +112,14 @@ RUN conda create -n cellrank python=3.9 numpy=1.21 jupyter notebook ipykernel nu
     && python -m ipykernel install --name=cellrank \
     && jupyter kernelspec list \
     && conda deactivate \
+# CellRank2
+RUN conda create -n cellrank2 python=3.9 numpy=1.21 jupyter notebook ipykernel numpy \
+    && source activate cellrank2 \
+    && conda install -y -c conda-forge cellrank=2.0.0 \
+    && pip install --no-cache-dir igraph session-info \
+    && python -m ipykernel install --name=cellrank2 \
+    && jupyter kernelspec list \
+    && conda deactivate \
 # doubletdetection
     && conda create -y -n doubletdetection python=3.7 jupyter notebook ipykernel numpy \
     && source activate doubletdetection \
