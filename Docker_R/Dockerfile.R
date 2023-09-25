@@ -1,10 +1,8 @@
-FROM rnakato/r_python_gpu:2022.11
+FROM docker_r-shortcake_r_seurat:latest
 LABEL maintainer "Ryuichiro Nakato <rnakato@iqb.u-tokyo.ac.jp>"
 
 USER root
 WORKDIR /opt
-
-#ENV LD_LIBRARY_PATH $LD_LIBRARY_PATH:/opt/conda/lib/
 
 ARG GITHUB_PAT
 RUN set -x && \
@@ -27,76 +25,111 @@ RUN set -x && \
     && apt-get clean \
     && rm -rf /var/lib/apt/lists/*
 
-CMD ["/bin/bash"]
-
-RUN R -e "BiocManager::install(c('DelayedMatrixStats','limma','scater','pcaMethods','WGCNA','preprocessCore', 'RCA', 'scmap', 'mixtools', 'stringi', 'rbokeh', 'DT', 'NMF', 'pheatmap', 'R2HTML', 'doMC', 'doRNG', 'scran', 'slingshot','DropletUtils', 'monocle', 'MeSH.Hsa.eg.db', 'MAST','clusterExperiment', 'scTensor', 'clusterProfiler'))" \
-    && R -e "options(timeout=6000); BiocManager::install(c('BSgenome.Hsapiens.UCSC.hg19', 'BSgenome.Hsapiens.UCSC.hg38', 'BSgenome.Mmusculus.UCSC.mm10', 'BSgenome.Scerevisiae.UCSC.sacCer3', 'BSgenome.Dmelanogaster.UCSC.dm6'))" \
-    && R -e "BiocManager::install(c('EnsDb.Hsapiens.v75','EnsDb.Hsapiens.v79', 'EnsDb.Hsapiens.v86', 'EnsDb.Mmusculus.v79'))" \
-    && R -e "remotes::install_github(c('jokergoo/ComplexHeatmap'))" \
-    && R -e "install.packages(c('dyngen','gam','gprofiler2'))"
-
-# Seurat
-COPY SeuratData SeuratData
-
-RUN R -e "install.packages(c('sleepwalk','bit64','here','zoo','scBio','Seurat','qqconf','metap'))" \
-    && R -e "remotes::install_github('mojaveazure/seurat-disk')" \
-# Signac
-    && R -e "BiocManager::install('ggbio')" \
-    && R -e "install.packages('Signac')" \
-# SingleR
-    && R -e "BiocManager::install(c('SingleR','scRNAseq','celldex'))" \
-# Seurat wrappers
-    && R -e "BiocManager::install(c('CoGAPS'))" \
-    && R -e "BiocManager::install(c('scry'))" \
-    && R -e "install.packages('glmpca')" \
-    && R -e "remotes::install_github('kharchenkolab/conos')" \
-#    && R -e "remotes::install_github('satijalab/seurat', ref = 'mixscape')" \
-    && R -e "remotes::install_github('satijalab/seurat-wrappers')" \
-# SeuratData
-    && R -e "remotes::install_github('satijalab/seurat-data')" \
-    && R -e "install.packages('SeuratData/ifnb.SeuratData_3.1.0.tar.gz', repos = NULL, type = 'source')" \
-    && R -e "install.packages('SeuratData/panc8.SeuratData_3.0.2.tar.gz', repos = NULL, type = 'source')" \
-    && R -e "install.packages('SeuratData/pbmcsca.SeuratData_3.0.0.tar.gz', repos = NULL, type = 'source')" \
-    && R -e "install.packages('SeuratData/pbmc3k.SeuratData_3.1.4.tar.gz', repos = NULL, type = 'source')" \
-    && R -e "install.packages('SeuratData/celegans.embryo.SeuratData_0.1.0.tar.gz', repos = NULL, type = 'source')" \
-    && R -e "install.packages('SeuratData/cbmc.SeuratData_3.1.4.tar.gz', repos = NULL, type = 'source')" \
-    && R -e "install.packages('SeuratData/hcabm40k.SeuratData_3.0.0.tar.gz', repos = NULL, type = 'source')" \
-    && R -e "install.packages('SeuratData/thp1.eccite.SeuratData_3.1.5.tar.gz', repos = NULL, type = 'source')" \
-    && R -e "install.packages('SeuratData/stxBrain.SeuratData_0.1.1.tar.gz', repos = NULL, type = 'source')" \
-    && R -e "install.packages('SeuratData/stxKidney.SeuratData_0.1.0.tar.gz', repos = NULL, type = 'source')" \
-    && R -e "install.packages('SeuratData/bmcite.SeuratData_0.3.0.tar.gz', repos = NULL, type = 'source')" \
-    && R -e "install.packages('SeuratData/pbmcMultiome.SeuratData_0.1.2.tar.gz', repos = NULL, type = 'source')" \
-    && R -e "install.packages('SeuratData/ssHippo.SeuratData_3.1.4.tar.gz', repos = NULL, type = 'source')" \
-    && rm -rf SeuratData
-
+RUN set -e \
+    && R -e "BiocManager::install(c('BioQC', \
+                                    'BSgenome.Hsapiens.UCSC.hg19', \
+                                    'BSgenome.Hsapiens.UCSC.hg38', \
+                                    'BSgenome.Mmusculus.UCSC.mm10', \
+                                    'BSgenome.Mmusculus.UCSC.mm39', \
+                                    'BSgenome.Dmelanogaster.UCSC.dm6', \
+                                    'BSgenome.Drerio.UCSC.danRer10', \
+                                    'BSgenome.Celegans.UCSC.ce10', \
+                                    'BSgenome.Celegans.UCSC.ce11', \
+                                    'BSgenome.Scerevisiae.UCSC.sacCer3', \
+                                    'celldex', \
+                                    'clusterExperiment', \
+                                    'clusterProfiler', \
+                                    'DelayedMatrixStats', \
+                                    'doMC', \
+                                    'doRNG', \
+                                    'DropletUtils', \
+                                    'DT', \
+                                    'EnsDb.Hsapiens.v75', \
+                                    'EnsDb.Hsapiens.v79', \
+                                    'EnsDb.Hsapiens.v86', \
+                                    'EnsDb.Mmusculus.v79', \
+                                    'EnsDb.Mmusculus.v86', \
+                                    'EnsDb.Dmelanogaster.v79', \
+                                    'EnsDb.Dmelanogaster.v86', \
+                                    'JASPAR2016', \
+                                    'JASPAR2018', \
+                                    'JASPAR2020', \
+                                    'JASPAR2022', \
+                                    'limma', \
+                                    'MAST', \
+                                    'MeSH.Hsa.eg.db', \
+                                    'mixtools', \
+                                    'monocle', \
+                                    'NMF', \
+                                    'org.Hs.eg.db', \
+                                    'org.Mm.eg.db', \
+                                    'org.Dm.eg.db', \
+                                    'org.Ce.eg.db', \
+                                    'org.Sc.sgd.db', \
+                                    'pcaMethods', \
+                                    'pheatmap', \
+                                    'preprocessCore', \
+                                    'R2HTML', \
+                                    'rbokeh', \
+                                    'RCA', \
+                                    'SC3', \
+                                    'scater', \
+                                    'scmap', \
+                                    'scran', \
+                                    'scRNAseq', \
+                                    'scTensor', \
+                                    'SingleCellExperiment', \
+                                    'SingleCellSignalR', \
+                                    'slingshot', \
+                                    'splatter', \
+                                    'stringi', \
+                                    'tricycle', \
+                                    'WGCNA'))" \
+    && R -e "install.packages(c('ClusterR', \
+                                'DDRTree', \
+                                'densityClust', \
+                                'dyngen', \
+                                'gam', \
+                                'gprofiler2', \
+                                'irlba', \
+                                'SAVER', \
+                                'UpSetR'))" \
+    && R -e "remotes::install_github(c('Danko-Lab/BayesPrism/BayesPrism', \
+                                       'humengying0907/InstaPrism', \
+                                       'jokergoo/ComplexHeatmap', \
+                                       'immunogenomics/presto', \
+                                       'aet21/EpiSCORE', \
+                                       'carmonalab/SignatuR', \
+                                       'SONGDONGYUAN1994/scDesign3', \
+                                       'BlishLab/scriabin', \
+                                       'https://github.com/saezlab/liana', \
+                                       'dviraran/SingleR'))" \
+    && R -e "remotes::install_github('powellgenomicslab/DropletQC', build_vignettes = TRUE)" \
 # scImpute, singleCellHaystack, scCATCH
-RUN R -e "remotes::install_github(c('Vivianstats/scImpute', 'alexisvdb/singleCellHaystack', 'ZJUFanLab/scCATCH'))" \
+    && R -e "install.packages('singleCellHaystack')" \
+    && R -e "remotes::install_github(c('Vivianstats/scImpute', 'ZJUFanLab/scCATCH'))" \
 # velocyto.R
     && R -e "remotes::install_github(c('aertslab/SCopeLoomR', 'velocyto-team/velocyto.R'))" \
     && R -e "install.packages('pagoda2')" \
 # SingleCellNet
     && R -e "remotes::install_github(c('pcahan1/singleCellNet'))" \
     && R -e "remotes::install_github('mojaveazure/loomR', ref = 'develop')" \
-# Splatter, SC3
-    && R -e "BiocManager::install(c('splatter','SC3'))" \
 # SCRABBLE
     && R -e "remotes::install_github('software-github/SCRABBLE/R')" \
-# Imputation comparison
-    && R -e "install.packages(c('SAVER','ClusterR'))" \
-# SingleCellSingnalR
-    && R -e "BiocManager::install(c('SingleCellSignalR'))" \
 # ArchR
     && R -e "devtools::install_github('GreenleafLab/ArchR', ref='master', repos = BiocManager::repositories())" \
 # chromVAR
     && R -e "BiocManager::install(c('chromVAR'))" \
-    && R -e "remotes::install_github(c('GreenleafLab/chromVARmotifs','GreenleafLab/motifmatchr'))" \
-# FlyATACAtlus
-    && R -e "install.packages(c('irlba','DDRTree','densityClust'))"
+    && R -e "remotes::install_github(c('GreenleafLab/chromVARmotifs','GreenleafLab/motifmatchr'))"
+
 # Monocle3
-RUN R -e "BiocManager::install(c('BiocGenerics', 'limma', 'S4Vectors', 'SingleCellExperiment', 'SummarizedExperiment', 'batchelor', 'Matrix.utils'))" \
+COPY speedglm-master.tar.gz speedglm-master.tar.gz
+RUN set -e \
+    && R CMD INSTALL speedglm-master.tar.gz \
+    && rm speedglm-master.tar.gz \
+    && R -e "BiocManager::install(c('BiocGenerics', 'limma', 'S4Vectors', 'SingleCellExperiment', 'SummarizedExperiment', 'batchelor', 'Matrix.utils'))" \
     && R -e "remotes::install_github('cole-trapnell-lab/leidenbase')" \
     && R -e "remotes::install_github('cole-trapnell-lab/monocle3', ref='develop')" \
-    && R -e "BiocManager::install(c('org.Mm.eg.db', 'org.Hs.eg.db', 'org.Dm.eg.db', 'org.Ce.eg.db'))" \
     && R -e "remotes::install_github('cole-trapnell-lab/garnett', ref='monocle3')" \
 # cicero
     && R -e "remotes::install_github('cole-trapnell-lab/cicero-release', ref = 'monocle3')" \
@@ -108,7 +141,8 @@ RUN R -e "BiocManager::install(c('BiocGenerics', 'limma', 'S4Vectors', 'SingleCe
     && R -e "remotes::install_github(c('immunogenomics/harmony','immunogenomics/presto','JEFworks/MUDAN'))"
 
 # kallisto, bustools
-RUN git clone https://github.com/BUStools/bustools.git \
+RUN set -e \
+    && git clone https://github.com/BUStools/bustools.git \
     && cd bustools \
     && mkdir build \
     && cd build \
@@ -117,9 +151,8 @@ RUN git clone https://github.com/BUStools/bustools.git \
     && rm -rf /work/bustools
 
 # metacells
-RUN R -e "BiocManager::install('tanaylab/metacell')" \
-# motif database
-    && R -e "BiocManager::install(c('JASPAR2016','JASPAR2018','JASPAR2020','JASPAR2022'))" \
+RUN set -e \
+    && R -e "BiocManager::install('tanaylab/metacell')" \
 # cisTopic, scAI
     && R -e "remotes::install_github(c('aertslab/cisTopic', 'sqjin/scAI'))" \
 # SCDC, MuSiC
@@ -129,17 +162,20 @@ RUN R -e "BiocManager::install('tanaylab/metacell')" \
     && R -e "remotes::install_github('bioFAM/MOFA2', build_opts = c('--no-resave-data --no-build-vignettes'))" \
 # bigSCale2
     && R -e "install.packages(c('fmsb','ClassDiscovery','ggalt','ggdendro','ggpubr'))" \
-    && R -e "BiocManager::install(c('org.Mm.eg.db', 'org.Hs.eg.db', 'BioQC', 'SingleCellExperiment'))" \
-    && R -e "options(timeout=6000); remotes::install_github('iaconogi/bigSCale2')"
+    && R -e "remotes::install_github('iaconogi/bigSCale2')"
 
 # FROWMAP
-RUN R -e "install.packages('SDMTools',,'http://rforge.net/',type='source')" \
+COPY SDMTools_1.1-221.2.tar.gz SDMTools_1.1-221.2.tar.gz
+RUN set -e \
+    && R CMD INSTALL SDMTools_1.1-221.2.tar.gz \
+    && rm SDMTools_1.1-221.2.tar.gz \
     && R -e "install.packages(c('igraph','robustbase','shiny','tcltk','rhandsontable'))" \
     && R -e "BiocManager::install('flowCore')" \
     && R -e "remotes::install_github(c('nolanlab/scaffold','ParkerICI/vite','nolanlab/Rclusterpp','nolanlab/spade','zunderlab/FLOWMAP'))"
 
 # CellChat
-RUN R -e "install.packages('NMF')" \
+#RUN R -e "install.packages('NMF')" \
+RUN set -e \
     && R -e "remotes::install_github('jokergoo/circlize')" \
     && R -e "remotes::install_github('jokergoo/ComplexHeatmap')" \
     && R -e "remotes::install_github('sqjin/CellChat')" \
@@ -153,13 +189,21 @@ RUN R -e "install.packages('NMF')" \
     && rm geomnet_0.3.1.tar.gz \
     && R -e "remotes::install_github('edroaldo/fusca')"
 
-# 202212
-RUN R -e "remotes::install_github('immunogenomics/presto')" \
-    && R -e "remotes::install_github('aet21/EpiSCORE')" \
-    && R -e "install.packages('UpSetR')" \
-    && R -e "remotes::install_github('powellgenomicslab/DropletQC', build_vignettes = TRUE)" \
-    && R -e "remotes::install_github('Danko-Lab/BayesPrism/BayesPrism')" \
-    && R -e "remotes::install_github('carmonalab/SignatuR')" \
+# LIGER (FFTW, FIt-SNE)
+RUN wget --progress=dot:giga http://www.fftw.org/fftw-3.3.10.tar.gz \
+    && tar zxvf fftw-3.3.10.tar.gz \
+    && rm fftw-3.3.10.tar.gz \
+    && cd fftw-3.3.10 \
+    && ./configure \
+    && make \
+    && make install \
+    && sudo git clone https://github.com/KlugerLab/FIt-SNE.git \
+    && cd FIt-SNE/ \
+    && g++ -std=c++11 -O3 src/sptree.cpp src/tsne.cpp src/nbodyfft.cpp -o bin/fast_tsne -pthread -lfftw3 -lm -Wno-address-of-packed-member \
+    && cp bin/fast_tsne /usr/local/bin/ \
+    && cd \
+    && rm -rf /opt/fftw-3.3.10 \
+    && R -e "install.packages('rliger')"
 
 # CIBERSORTx EcoTyper resigstration needed
 # https://github.com/digitalcytometry/ecotyper
